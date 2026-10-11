@@ -80,9 +80,10 @@ def read_plan(plan_file: Path) -> dict:
     mode = source_audio.get("mode", "keep")
     if mode not in ("keep", "replace"):
         raise ValueError("source_audio.mode must be keep or replace")
-    source_stream = stream(video_info, "audio")
-    if mode == "keep" and source_stream is None:
-        raise ValueError("source_audio.mode is keep, but the video has no audio stream; choose replace")
+    audio_streams = [item for item in video_info.get("streams", []) if item.get("codec_type") == "audio"]
+    source_index = int(source_audio.get("stream_index", 0))
+    if mode == "keep" and not 0 <= source_index < len(audio_streams):
+        raise ValueError("source_audio.stream_index does not select an existing audio stream; choose replace if the video has none")
     video_start = float(video_stream.get("start_time", 0))
     source_gain = number(source_audio.get("gain_db", 0), "source audio gain_db", -60, 12)
     mastering = plan.get("mastering", {})
@@ -123,7 +124,8 @@ def read_plan(plan_file: Path) -> dict:
         raise ValueError("The plan has no audio: add a cue or keep production audio")
     return {"title": title, "video": video, "package": package, "out": out,
             "container": container, "video_info": video_info, "duration": duration,
-            "mode": mode, "source_gain": source_gain, "video_start": video_start, "cues": cues,
+            "mode": mode, "source_gain": source_gain, "source_index": source_index,
+            "video_start": video_start, "cues": cues,
             "target_i": target_i, "target_tp": target_tp, "target_lra": target_lra}
 
 
@@ -138,7 +140,7 @@ def mix_audio(plan: dict, destination: Path) -> None:
     filters = []
     labels = []
     if plan["mode"] == "keep":
-        filters.append(f"[0:a:0]asetpts=PTS-{seconds(plan['video_start'])}/TB,aresample=48000:async=1:first_pts=0,aformat=channel_layouts=stereo,volume={seconds(plan['source_gain'])}dB,apad,atrim=duration={seconds(plan['duration'])}[source]")
+        filters.append(f"[0:a:{plan['source_index']}]asetpts=PTS-{seconds(plan['video_start'])}/TB,aresample=48000:async=1:first_pts=0,aformat=channel_layouts=stereo,volume={seconds(plan['source_gain'])}dB,apad,atrim=duration={seconds(plan['duration'])}[source]")
         labels.append("[source]")
     for index, cue in enumerate(plan["cues"], 1):
         parts = [f"[{index}:a:0]atrim=start={seconds(cue['in'])}:duration={seconds(cue['duration'])}",
@@ -258,7 +260,8 @@ def main() -> None:
         shutil.copyfile(args.plan, plan_copy)
     report.write_text(json.dumps({
         "title": plan["title"], "picture": str(plan["video"]), "audio_package": str(plan["package"]),
-        "source_audio_mode": plan["mode"], "cue_ids": [cue["id"] for cue in plan["cues"]],
+        "source_audio_mode": plan["mode"], "source_audio_stream_index": plan["source_index"],
+        "cue_ids": [cue["id"] for cue in plan["cues"]],
         "master_wav": str(master), "final_video": str(final), "mix_plan": str(plan_copy), "loudness": mastering_result,
         "checks": checks,
     }, indent=2) + "\n", encoding="utf-8")
