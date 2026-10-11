@@ -3,11 +3,13 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import shutil
 import subprocess
 import sys
 import tempfile
+from contextlib import nullcontext
 from pathlib import Path
 
 
@@ -16,11 +18,22 @@ def run(args: list[str]) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--keep", type=Path, help="Keep a new disposable session folder for an in-REAPER import and render test")
+    args = parser.parse_args()
     for program in ("ffmpeg", "ffprobe"):
         if shutil.which(program) is None:
             raise RuntimeError(f"{program} is missing from PATH")
     scripts = Path(__file__).resolve().parent
-    with tempfile.TemporaryDirectory(prefix="reaper-skill-smoke-") as temp:
+    if args.keep:
+        root = args.keep.resolve()
+        if root.exists():
+            raise FileExistsError(f"Disposable test folder already exists: {root}")
+        root.mkdir(parents=True)
+        workspace = nullcontext(str(root))
+    else:
+        workspace = tempfile.TemporaryDirectory(prefix="reaper-skill-smoke-")
+    with workspace as temp:
         root = Path(temp)
         picture = root / "Picture_Master.mp4"
         package = root / "Example_Sound"
@@ -63,6 +76,8 @@ def main() -> None:
              "--report", str(report)])
         assert report.is_file()
     print("PASS: REAPER session preparation and WAV verification")
+    if args.keep:
+        print(f"IMPORT SCRIPT: {root / 'Output' / 'Reaper_Smoke_REAPER_Session' / '00_Documents' / 'Import_To_REAPER.lua'}")
     print("NEXT: run Import_To_REAPER.lua and render once inside REAPER on this PC")
 
 

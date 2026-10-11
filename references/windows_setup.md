@@ -39,7 +39,7 @@ Copy-Item -Path (Join-Path $SkillDir 'skills\film-audio-reaper-mix\*') -Destinat
 & $Python (Join-Path $ReaperDir 'scripts\smoke_test.py')
 ```
 
-Install REAPER from [reaper.fm](https://www.reaper.fm/download.php) if it is not already present. The smoke test checks Python, FFmpeg, session preparation, and WAV verification; it does not run REAPER. On the Windows PC, run the generated `Import_To_REAPER.lua` in a new empty REAPER project, confirm the video and tracks load, render a short test WAV, and inspect it before processing the full cut.
+Install REAPER from [reaper.fm](https://www.reaper.fm/download.php) if it is not already present. The smoke test checks Python, FFmpeg, session preparation, and WAV verification; it does not run REAPER. For an in-app test, run `& $Python (Join-Path $ReaperDir 'scripts\smoke_test.py') --keep (Join-Path $env:TEMP ('reaper-smoke-' + [guid]::NewGuid().ToString('N')))` and open the printed `Import_To_REAPER.lua` in a new empty REAPER project. Confirm the video and tracks load, render a short test WAV, and inspect it before processing the full cut.
 
 If `py -3` selects a Python older than 3.11, install a current Python and select it explicitly with the Python launcher (for example, `py -3.11`). Recreate the virtual environment with that interpreter. If `py` is unavailable but a suitable `python` command exists, use `python -m venv $VenvDir` after checking its version. Do not start film processing until the smoke test prints `PASS`.
 
