@@ -21,6 +21,15 @@ ffprobe -version
 & $Python (Join-Path $SkillDir 'scripts\smoke_test.py')
 ```
 
+To install the separate finishing skill from the same repository, copy its folder alongside the first skill and run its own test:
+
+```powershell
+$FinishDir = Join-Path $HOME '.codex\skills\film-audio-video-finish'
+New-Item -ItemType Directory -Force $FinishDir | Out-Null
+Copy-Item -Path (Join-Path $SkillDir 'skills\film-audio-video-finish\*') -Destination $FinishDir -Recurse -Force
+& $Python (Join-Path $FinishDir 'scripts\smoke_test.py')
+```
+
 If `py -3` selects a Python older than 3.11, install a current Python and select it explicitly with the Python launcher (for example, `py -3.11`). Recreate the virtual environment with that interpreter. If `py` is unavailable but a suitable `python` command exists, use `python -m venv $VenvDir` after checking its version. Do not start film processing until the smoke test prints `PASS`.
 
 The smoke test creates its files in a temporary directory and removes them afterward. It does not need a film. For a real film, keep all output in a separate project folder and use Windows paths or `pathlib.Path`; do not assume Unix `/tmp` or `python3` exists. The script examples in `SKILL.md` describe the output format; use `$Python` from this guide to run them in PowerShell.
