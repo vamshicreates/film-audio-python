@@ -30,6 +30,17 @@ Copy-Item -Path (Join-Path $SkillDir 'skills\film-audio-video-finish\*') -Destin
 & $Python (Join-Path $FinishDir 'scripts\smoke_test.py')
 ```
 
+To install the REAPER mixing skill as a third folder, use the same checkout and test its file-preparation path:
+
+```powershell
+$ReaperDir = Join-Path $HOME '.codex\skills\film-audio-reaper-mix'
+New-Item -ItemType Directory -Force $ReaperDir | Out-Null
+Copy-Item -Path (Join-Path $SkillDir 'skills\film-audio-reaper-mix\*') -Destination $ReaperDir -Recurse -Force
+& $Python (Join-Path $ReaperDir 'scripts\smoke_test.py')
+```
+
+Install REAPER from [reaper.fm](https://www.reaper.fm/download.php) if it is not already present. The smoke test checks Python, FFmpeg, session preparation, and WAV verification; it does not run REAPER. On the Windows PC, run the generated `Import_To_REAPER.lua` in a new empty REAPER project, confirm the video and tracks load, render a short test WAV, and inspect it before processing the full cut.
+
 If `py -3` selects a Python older than 3.11, install a current Python and select it explicitly with the Python launcher (for example, `py -3.11`). Recreate the virtual environment with that interpreter. If `py` is unavailable but a suitable `python` command exists, use `python -m venv $VenvDir` after checking its version. Do not start film processing until the smoke test prints `PASS`.
 
 The smoke test creates its files in a temporary directory and removes them afterward. It does not need a film. For a real film, keep all output in a separate project folder and use Windows paths or `pathlib.Path`; do not assume Unix `/tmp` or `python3` exists. The script examples in `SKILL.md` describe the output format; use `$Python` from this guide to run them in PowerShell.
