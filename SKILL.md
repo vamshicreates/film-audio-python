@@ -43,9 +43,13 @@ The renderer accepts a JSON file with a required cue `name`, `duration`, optiona
 }
 ```
 
-Run `python3 scripts/render_score.py --spec cue.json --out Film_Sound/SC001_Opening/MUS001_Opening_Tension`. Change the composition and timbre for the film; the example is only a format illustration. The renderer writes a named mix and a separate labeled folder for each instrument stem.
+Run `python3 scripts/render_score.py --spec cue.json --out Film_Sound/SC001_Opening/MUS001_Opening_Tension` on macOS or Linux. On Windows, use the Python executable in the virtual environment, for example `& $Python scripts\render_score.py --spec cue.json --out Film_Sound\SC001_Opening\MUS001_Opening_Tension` in PowerShell. Change the composition and timbre for the film; the example is only a format illustration. The renderer writes a named mix and a separate labeled folder for each instrument stem.
 
-The music renderer needs NumPy; the PDF builder needs ReportLab. Both run locally. Check the active Python environment before use. In Codex desktop, `load_workspace_dependencies` provides a bundled Python with both libraries when the default Python lacks one.
+The music renderer needs NumPy; the PDF builder needs ReportLab. Both run locally. Install dependencies from [`requirements.txt`](requirements.txt) into a Python 3.11 or newer virtual environment. Check the active Python environment before use. In Codex desktop, `load_workspace_dependencies` provides a bundled Python with both libraries when the default Python lacks one.
+
+## Windows setup and validation
+
+Follow [the Windows setup guide](references/windows_setup.md) on the actual Windows PC. Confirm Python, FFmpeg, and ffprobe are available, install the Python dependencies, and run `scripts/smoke_test.py` with that PC's virtual-environment Python. The test renders a labeled 48 kHz, 24-bit stereo WAV cue, checks its stem folders, builds a PDF that references the delivered audio, and checks both FFmpeg commands. Do not claim Windows compatibility from a run on another operating system; report the Windows test result and any installation changes made.
 
 ## Folder and report deliverables
 
